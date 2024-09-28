@@ -35,7 +35,7 @@ suppressPackageStartupMessages(library(tidyverse))
 #' @examples 
 #' `data <- load_expression('/project/bf528/project_1/data/example_intensity_data.csv')`
 load_expression <- function(filepath) {
-    return(NULL)
+    return(read_delim(filepath))
 }
 
 #' Filter 15% of the gene expression values.
