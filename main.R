@@ -51,7 +51,11 @@ load_expression <- function(filepath) {
 #' `tibble [40,158 × 1] (S3: tbl_df/tbl/data.frame)`
 #' `$ probe: chr [1:40158] "1007_s_at" "1053_at" "117_at" "121_at" ...`
 filter_15 <- function(tibble){
-    return(NULL)
+  filtered_tibble <- tibble %>%
+    dplyr::filter(rowMeans(select(., starts_with("GSM")) >= log2(15)) >= 0.15) %>%
+    select(1)
+  
+  return(filtered_tibble)
 }
 
 #### Gene name conversion ####
