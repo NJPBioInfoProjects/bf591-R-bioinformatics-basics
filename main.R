@@ -155,13 +155,10 @@ affy_to_hgnc <- function(affy_ids) {
 #' `1 202860_at   DENND4B good        7.16      ...`
 #' `2 204340_at   TMEM187 good        6.40      ...`
 reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
-  # Match probe IDs with HGNC symbols
+  # Add an order column to maintain original row order
   expr_tibble <- expr_tibble %>%
-    mutate(hgnc_symbol = names_ids$hgnc_symbol[match(probe, names_ids$affy_hg_u133_plus_2)])  # Assuming 'probe' is in expr_tibble
-  
-  # Print to check if hgnc_symbol was assigned correctly
-  print("After matching HGNC symbols:")
-  print(expr_tibble)
+    mutate(original_order = row_number()) %>%
+    mutate(hgnc_symbol = names_ids$hgnc_symbol[match(probe, names_ids$affy_hg_u133_plus_2)])
   
   # Add a new column indicating 'good' or 'bad' gene category
   expr_tibble <- expr_tibble %>%
@@ -171,19 +168,14 @@ reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
       TRUE ~ NA_character_
     ))
   
-  # Print to check if gene_set was assigned correctly
-  print("After categorizing genes:")
-  print(expr_tibble)
-  
   # Filter the data to keep only relevant genes (good and bad)
   reduced_data <- expr_tibble %>%
     filter(!is.na(gene_set)) %>%
-    select(probe, hgnc_symbol, gene_set, everything())  # Keep all other columns
+    select(probe, hgnc_symbol, gene_set, everything()) %>%
+    arrange(original_order)  # Reorder to original
   
-  # Check if any data remains after filtering
-  if (nrow(reduced_data) == 0) {
-    message("No matching genes found. Check your good and bad gene lists.")
-  }
+  # Drop the temporary order column
+  reduced_data <- select(reduced_data, -original_order)
   
   return(reduced_data)
 }
