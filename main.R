@@ -116,10 +116,10 @@ affy_to_hgnc <- function(affy_ids) {
   result_tibble <- as_tibble(result)
   
   # Create a tibble with both Affy IDs and HGNC names
-  final_result <- tibble(
-    affy_id = affy_ids,
-    hgnc_name = result_tibble$hgnc_symbol[match(affy_ids, result_tibble$affy_id)]
-  )
+  # final_result <- tibble(
+    # affy_id = affy_ids,
+    # hgnc_name = result_tibble$hgnc_symbol[match(affy_ids, result_tibble$affy_id)]
+  # )
   
   return(result_tibble)
 }
@@ -155,7 +155,37 @@ affy_to_hgnc <- function(affy_ids) {
 #' `1 202860_at   DENND4B good        7.16      ...`
 #' `2 204340_at   TMEM187 good        6.40      ...`
 reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
-    return(NULL)
+  # Match probe IDs with HGNC symbols
+  expr_tibble <- expr_tibble %>%
+    mutate(hgnc_symbol = names_ids$hgnc_symbol[match(probe, names_ids$affy_hg_u133_plus_2)])  # Assuming 'probe' is in expr_tibble
+  
+  # Print to check if hgnc_symbol was assigned correctly
+  print("After matching HGNC symbols:")
+  print(expr_tibble)
+  
+  # Add a new column indicating 'good' or 'bad' gene category
+  expr_tibble <- expr_tibble %>%
+    mutate(gene_set = case_when(
+      hgnc_symbol %in% good_genes ~ "good",
+      hgnc_symbol %in% bad_genes ~ "bad",
+      TRUE ~ NA_character_
+    ))
+  
+  # Print to check if gene_set was assigned correctly
+  print("After categorizing genes:")
+  print(expr_tibble)
+  
+  # Filter the data to keep only relevant genes (good and bad)
+  reduced_data <- expr_tibble %>%
+    filter(!is.na(gene_set)) %>%
+    select(probe, hgnc_symbol, gene_set, everything())  # Keep all other columns
+  
+  # Check if any data remains after filtering
+  if (nrow(reduced_data) == 0) {
+    message("No matching genes found. Check your good and bad gene lists.")
+  }
+  
+  return(reduced_data)
 }
 
 #' Convert a wide format tibble to long for easy plotting
