@@ -155,29 +155,24 @@ affy_to_hgnc <- function(affy_ids) {
 #' `1 202860_at   DENND4B good        7.16      ...`
 #' `2 204340_at   TMEM187 good        6.40      ...`
 reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
-  # Add an order column to maintain original row order
-  expr_tibble <- expr_tibble %>%
-    mutate(original_order = row_number()) %>%
-    mutate(hgnc_symbol = names_ids$hgnc_symbol[match(probe, names_ids$affy_hg_u133_plus_2)])
-  
-  # Add a new column indicating 'good' or 'bad' gene category
-  expr_tibble <- expr_tibble %>%
-    mutate(gene_set = case_when(
-      hgnc_symbol %in% good_genes ~ "good",
-      hgnc_symbol %in% bad_genes ~ "bad",
-      TRUE ~ NA_character_
-    ))
-  
-  # Filter the data to keep only relevant genes (good and bad)
-  reduced_data <- expr_tibble %>%
-    filter(!is.na(gene_set)) %>%
-    select(probe, hgnc_symbol, gene_set, everything()) %>%
-    arrange(original_order)  # Reorder to original
-  
-  # Drop the temporary order column
-  reduced_data <- select(reduced_data, -original_order)
-  
-  return(reduced_data)
+    # Match probe IDs with HGNC symbols
+    expr_tibble <- expr_tibble %>%
+      mutate(hgnc_symbol = names_ids$hgnc_symbol[match(probe, names_ids$affy_hg_u133_plus_2)])
+    
+    # Add a new column indicating 'good' or 'bad' gene category
+    expr_tibble <- expr_tibble %>%
+      mutate(gene_set = case_when(
+        hgnc_symbol %in% good_genes ~ "good",
+        hgnc_symbol %in% bad_genes ~ "bad",
+        TRUE ~ NA_character_
+      ))
+    
+    # Filter the data to keep only relevant genes (good and bad)
+    reduced_data <- expr_tibble %>%
+      filter(!is.na(gene_set)) %>%
+      select(probe, hgnc_symbol, gene_set, everything())
+    
+    return(reduced_data)
 }
 
 #' Convert a wide format tibble to long for easy plotting
