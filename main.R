@@ -82,9 +82,43 @@ filter_15 <- function(tibble){
 #' `3        1553551_s_at       MT-TM`
 #' `4        1553551_s_at      MT-ND2`
 #' `5           202860_at     DENND4B`
-affy_to_hgnc <- function(affy_vector) {
-    return(NULL)
+affy_to_hgnc <- function(affy_ids) {
+    # Ensure the input is a tibble or data frame and pull the Affy IDs
+    if (is.data.frame(affy_ids) || is_tibble(affy_ids)) {
+      affy_ids <- affy_ids %>% pull()  # Pull the first column as a character vector
+    } else {
+      affy_ids <- as.character(affy_ids)  # Convert to character if not a tibble/data frame
+    }
+    
+    # Connect to the ENSEMBL BioMart
+    mart <- useMart("ENSEMBL_MART_ENSEMBL")
+    dataset <- useDataset("hsapiens_gene_ensembl", mart)
+    
+    # Fetch the Affy IDs and corresponding HGNC names
+    result <- tryCatch({
+      getBM(
+        attributes = c("affy_hg_u133_plus_2", "hgnc_symbol"),
+        filters = "affy_hg_u133_plus_2",
+        values = affy_ids,
+        mart = dataset
+      )
+    }, error = function(e) {
+      message("Error in connection: ", e)
+      return(NULL)
+    })
+    
+    # Check if result is empty and handle potential errors
+    if (is.null(result) || nrow(result) == 0) {
+      stop("No results found or connection failed.")
+    }
+    
+    # Convert to tibble and extract HGNC symbols as a character vector
+    hgnc_names <- as_tibble(result) %>%
+      pull(hgnc_symbol)
+    
+    return(hgnc_names)
 }
+
 
 #' Reduce a tibble of expression data to only the rows in good_genes or bad_genes.
 #'
