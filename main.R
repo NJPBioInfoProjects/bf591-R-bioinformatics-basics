@@ -186,6 +186,12 @@ reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
 #'
 #' @examples
 convert_to_long <- function(tibble) {
-    return(NULL)
+  long_data <- tibble %>%
+    pivot_longer(
+      col = starts_with('GSM'),
+      names_to = "sample",
+      values_to = "value"
+    )
+  return(long_data)
 }
 
