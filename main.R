@@ -83,12 +83,9 @@ filter_15 <- function(tibble){
 #' `4        1553551_s_at      MT-ND2`
 #' `5           202860_at     DENND4B`
 affy_to_hgnc <- function(affy_ids) {
-  # Ensure the input is a tibble or data frame and pull the Affy IDs
-  if (is.data.frame(affy_ids) || is_tibble(affy_ids)) {
-    affy_ids <- affy_ids %>% pull()  # Pull the first column as a character vector
-  } else {
-    affy_ids <- as.character(affy_ids)  # Convert to character if not a tibble/data frame
-  }
+
+  # Convert to character vector
+  affy_ids <- affy_ids %>% pull() 
   
   # Connect to the ENSEMBL BioMart
   mart <- useMart("ENSEMBL_MART_ENSEMBL")
@@ -101,11 +98,6 @@ affy_to_hgnc <- function(affy_ids) {
     values = affy_ids,
     mart = dataset
   )
-  
-  # Check if result is empty
-  if (nrow(result) == 0) {
-    stop("No results found.")
-  }
   
   # Convert to tibble and return
   result_tibble <- as_tibble(result)
