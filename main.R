@@ -95,31 +95,20 @@ affy_to_hgnc <- function(affy_ids) {
   dataset <- useDataset("hsapiens_gene_ensembl", mart)
   
   # Fetch the Affy IDs and corresponding HGNC names
-  result <- tryCatch({
-    getBM(
-      attributes = c("affy_hg_u133_plus_2", "hgnc_symbol"),
-      filters = "affy_hg_u133_plus_2",
-      values = affy_ids,
-      mart = dataset
-    )
-  }, error = function(e) {
-    message("Error in connection: ", e)
-    return(NULL)
-  })
+  result <- getBM(
+    attributes = c("affy_hg_u133_plus_2", "hgnc_symbol"),
+    filters = "affy_hg_u133_plus_2",
+    values = affy_ids,
+    mart = dataset
+  )
   
-  # Check if result is empty and handle potential errors
-  if (is.null(result) || nrow(result) == 0) {
-    stop("No results found or connection failed.")
+  # Check if result is empty
+  if (nrow(result) == 0) {
+    stop("No results found.")
   }
   
-  # Convert to tibble and merge with original Affy IDs
+  # Convert to tibble and return
   result_tibble <- as_tibble(result)
-  
-  # Create a tibble with both Affy IDs and HGNC names
-  # final_result <- tibble(
-    # affy_id = affy_ids,
-    # hgnc_name = result_tibble$hgnc_symbol[match(affy_ids, result_tibble$affy_id)]
-  # )
   
   return(result_tibble)
 }
