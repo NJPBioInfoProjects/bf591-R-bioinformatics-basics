@@ -1,7 +1,6 @@
 ---
 title: "Assignment Bioinformatics Basics Report"
-author: "Taylor Falk"
-date: "11/17/2021"
+author: "Nicolas Petrunich"
 output: html_document
 ---
 

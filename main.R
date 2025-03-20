@@ -1,6 +1,5 @@
 #!/usr/bin/Rscript
-## Author: Taylor Falk
-## tfalk@bu.edu
+## Author: Nicolas Petrunich
 ## BU BF591
 ## Assignment Bioinformatics Basics
 
@@ -145,7 +144,7 @@ reduce_data <- function(expr_tibble, names_ids, good_genes, bad_genes){
       mutate(gene_set = case_when(
         hgnc_symbol %in% good_genes ~ "good",
         hgnc_symbol %in% bad_genes ~ "bad",
-        TRUE ~ NA_character_
+        # TRUE ~ NA_character_
       ))
     
     # Filter the data to keep only relevant genes (good and bad)
